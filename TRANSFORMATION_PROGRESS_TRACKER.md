@@ -21,7 +21,7 @@ This file tracks the progress of transforming MiniSolrCloudCluster tests to Proc
 | **Total Target Tests** | 65 |
 | ✅ Finished | 0 |
 | ⏸️ Blocked | 0 |
-| ❌ Skipped | 20 |
+| ❌ Skipped | 0 |
 | ⏳ Remaining | 65 |
 | 🔄 Rechecked | 0 |
 
