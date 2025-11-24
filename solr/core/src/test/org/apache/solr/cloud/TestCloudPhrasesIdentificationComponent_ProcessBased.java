@@ -143,7 +143,7 @@ public class TestCloudPhrasesIdentificationComponent_ProcessBased
 
     final String configName = DEBUG_LABEL + "_config-set";
     final Path configDir =
-        Paths.get(SolrTestCaseJ4.TEST_HOME(), "..", "collection1", "conf");
+        Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "_default", "conf");
 
     // Create cluster
     cluster =

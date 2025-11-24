@@ -141,7 +141,7 @@ public class TestCloudDeleteByQuery_ProcessBased extends ProcessBasedUpgradeTest
   private void setupCluster() throws Exception {
     final String configName = "solrCloudCollectionConfig";
     final Path configDir =
-        Paths.get(SolrTestCaseJ4.TEST_HOME(), "..", "collection1", "conf");
+        Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "_default", "conf");
 
     // Create cluster
     cluster =

@@ -79,7 +79,7 @@ public class TestRequestForwarding_ProcessBased extends ProcessBasedUpgradeTestB
       solrClient = cluster.getSolrClient();
 
       // Upload configset
-      Path configPath = Paths.get(SolrTestCaseJ4.TEST_HOME(), "..", "collection1", "conf");
+      Path configPath = Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "_default", "conf");
       cluster.uploadConfigSet(configPath, CONFIG_NAME);
 
       checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);

@@ -16,6 +16,7 @@
  */
 package org.apache.solr.cloud.upgrade;
 
+import com.carrotsearch.randomizedtesting.RandomizedRunner;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
@@ -31,6 +32,7 @@ import org.apache.solr.cloud.process.ProcessBasedMiniSolrCloudCluster;
 import org.apache.solr.common.cloud.ZkStateReader;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -124,6 +126,7 @@ import org.slf4j.LoggerFactory;
  *   <li><code>solr.upgrade.home</code> - Path to upgraded Solr installation
  * </ul>
  */
+@RunWith(RandomizedRunner.class)
 public abstract class ProcessBasedUpgradeTestBase {
   private static final Logger log = LoggerFactory.getLogger(ProcessBasedUpgradeTestBase.class);
 

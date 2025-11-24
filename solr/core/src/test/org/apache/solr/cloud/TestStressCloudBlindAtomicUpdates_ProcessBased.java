@@ -139,7 +139,7 @@ public class TestStressCloudBlindAtomicUpdates_ProcessBased extends ProcessBased
     solrClient = cluster.getSolrClient();
 
     // Upload configset
-    Path configDir = Paths.get(SolrTestCaseJ4.TEST_HOME(), "..", "collection1", "conf");
+    Path configDir = Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "_default", "conf");
     cluster.uploadConfigSet(configDir, "stress_config");
   }
 

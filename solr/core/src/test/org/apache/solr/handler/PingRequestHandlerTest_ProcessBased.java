@@ -73,8 +73,8 @@ public class PingRequestHandlerTest_ProcessBased extends ProcessBasedUpgradeTest
 
     checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
-    // Upload configset
-    Path configDir = Paths.get(SolrTestCaseJ4.TEST_HOME(), "..", "collection1", "conf");
+    // Upload configset (use _default which doesn't have test-specific dependencies)
+    Path configDir = Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "_default", "conf");
     String configName = "solrCloudCollectionConfig";
     cluster.uploadConfigSet(configDir, configName);
 

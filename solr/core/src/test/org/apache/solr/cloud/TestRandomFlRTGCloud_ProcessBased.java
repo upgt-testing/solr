@@ -128,7 +128,7 @@ public class TestRandomFlRTGCloud_ProcessBased extends ProcessBasedUpgradeTestBa
     solrClient = cluster.getSolrClient();
 
     // Upload config
-    final Path configDir = Paths.get(SolrTestCaseJ4.TEST_HOME(), "..", "collection1", "conf");
+    final Path configDir = Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "_default", "conf");
     cluster.uploadConfigSet(configDir, "rtg_config");
   }
 

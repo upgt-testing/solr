@@ -181,6 +181,14 @@ allprojects {
         // and not the test JVM itself.
         systemProperties testOptionsResolved
 
+        // Forward ProcessBased upgrade test properties from command line to test JVM
+        ['solr.start.home', 'solr.upgrade.home'].each { prop ->
+          def value = System.getProperty(prop)
+          if (value != null) {
+            systemProperty prop, value
+          }
+        }
+
         if (Boolean.parseBoolean(testOptionsResolved['tests.asserts'])) {
           jvmArgs("-ea", "-esa")
         } else {

@@ -80,7 +80,7 @@ public class TestRawTransformer_ProcessBased extends ProcessBasedUpgradeTestBase
 
   private void runTestTransformers() throws Exception {
     final String configName = "testRawTransformerConfig";
-    final Path configDir = Paths.get(SolrTestCaseJ4.TEST_HOME(), "collection1", "conf");
+    final Path configDir = Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "_default", "conf");
 
     cluster =
         new ProcessBasedMiniSolrCloudCluster.Builder()

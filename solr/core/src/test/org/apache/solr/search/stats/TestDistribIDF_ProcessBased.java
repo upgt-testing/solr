@@ -90,7 +90,7 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
               .withStartVersionFromSystemProperty()
               .build();
       cluster.start();      cluster.uploadConfigSet(
-          Paths.get(SolrTestCaseJ4.TEST_HOME(), "collection1", "conf"), "conf1");
+          Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "_default", "conf"), "conf1");
       cluster.uploadConfigSet(
           Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "configset-2", "conf"), "conf2");
 
@@ -203,7 +203,7 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
               .withStartVersionFromSystemProperty()
               .build();
       cluster.start();      cluster.uploadConfigSet(
-          Paths.get(SolrTestCaseJ4.TEST_HOME(), "collection1", "conf"), "conf1");
+          Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "_default", "conf"), "conf1");
       cluster.uploadConfigSet(
           Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "configset-2", "conf"), "conf2");
 
@@ -285,7 +285,7 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
               .withStartVersionFromSystemProperty()
               .build();
       cluster.start();      cluster.uploadConfigSet(
-          Paths.get(SolrTestCaseJ4.TEST_HOME(), "collection1", "conf"), "conf1");
+          Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "_default", "conf"), "conf1");
 
       checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 

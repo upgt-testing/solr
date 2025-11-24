@@ -68,7 +68,7 @@ public class SolrMetricsIntegrationTest_ProcessBased extends ProcessBasedUpgrade
               .build();
       cluster.start();      // Upload config
       cluster.uploadConfigSet(
-          Paths.get(SolrTestCaseJ4.TEST_HOME(), "collection1", "conf"), "conf");
+          Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "_default", "conf"), "conf");
 
       checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
