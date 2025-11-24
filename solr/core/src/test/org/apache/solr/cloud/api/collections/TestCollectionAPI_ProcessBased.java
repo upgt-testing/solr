@@ -79,9 +79,7 @@ public class TestCollectionAPI_ProcessBased extends ProcessBasedUpgradeTestBase 
             .withNodeCount(2)
             .withStartVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-    solrClient = cluster.getSolrClient();
+    cluster.start();    solrClient = cluster.getSolrClient();
 
     checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
@@ -256,9 +254,7 @@ public class TestCollectionAPI_ProcessBased extends ProcessBasedUpgradeTestBase 
             .withNodeCount(1)
             .withStartVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-    solrClient = cluster.getSolrClient();
+    cluster.start();    solrClient = cluster.getSolrClient();
 
     checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 

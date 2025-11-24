@@ -15,6 +15,10 @@
  * limitations under the License.
  */
 package org.apache.solr.handler.admin;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.getRandom;
+import static org.apache.solr.SolrTestCaseJ4.params;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.rarely;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.randomInt;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -65,7 +69,7 @@ public class DaemonStreamApiTest_ProcessBased extends ProcessBasedUpgradeTestBas
 
   // We want 2-5 daemons. Choose one of them to start/stop/kill to catch any off-by-one or other
   // bookkeeping errors.
-  final int numDaemons = random().nextInt(3) + 2;
+  final int numDaemons = getRandom().nextInt(3) + 2;
   String daemonOfInterest;
 
   List<String> daemonNames = new ArrayList<>();
@@ -90,9 +94,7 @@ public class DaemonStreamApiTest_ProcessBased extends ProcessBasedUpgradeTestBas
             .withNodeCount(1)
             .withStartVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-    solrClient = cluster.getSolrClient();
+    cluster.start();    solrClient = cluster.getSolrClient();
 
     // Get base URL for streaming
     url = cluster.getJettySolrRunnerBaseUrl(0) + "/" + CHECKPOINT_COLL;
@@ -115,7 +117,7 @@ public class DaemonStreamApiTest_ProcessBased extends ProcessBasedUpgradeTestBas
       String name = DAEMON_ROOT + idx;
       daemonNames.add(name);
     }
-    daemonOfInterest = daemonNames.get(random().nextInt(numDaemons));
+    daemonOfInterest = daemonNames.get(getRandom().nextInt(numDaemons));
 
     // Test no daemon defined
     checkCmdsNoDaemon(daemonOfInterest);

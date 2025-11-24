@@ -16,6 +16,19 @@
  */
 package org.apache.solr.cloud;
 
+import static com.carrotsearch.randomizedtesting.RandomizedTest.getRandom;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.randomInt;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.rarely;
+import static org.apache.solr.SolrTestCaseJ4.params;
+import static org.apache.solr.SolrTestCaseJ4.sdoc;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.apache.solr.cloud.process.ProcessBasedMiniSolrCloudCluster;
+
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,6 +51,8 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.params.SolrParams;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * ProcessBased upgrade test for pseudo return fields in SolrCloud.
@@ -50,6 +65,7 @@ import org.junit.Test;
  */
 public class TestCloudPseudoReturnFields_ProcessBased extends ProcessBasedUpgradeTestBase {
 
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private static final String DEBUG_LABEL = MethodHandles.lookup().lookupClass().getName();
   private static final String COLLECTION_NAME = DEBUG_LABEL + "_collection";
 
@@ -89,7 +105,7 @@ public class TestCloudPseudoReturnFields_ProcessBased extends ProcessBasedUpgrad
   private void setupCluster() throws Exception {
     // replication factor will impact whether we expect a list of urls from the '[shard]'
     // augmenter...
-    repFactor = usually() ? 1 : 2;
+    repFactor = getRandom().nextInt(10) < 8 ? 1 : 2;  // usually() equivalent: ~80% chance of 1
     // ... and we definitely want to ensure forwarded requests to other shards work ...
     final int numShards = 2;
     // ... including some forwarded requests from nodes not hosting a shard
@@ -106,10 +122,7 @@ public class TestCloudPseudoReturnFields_ProcessBased extends ProcessBasedUpgrad
             .withStartVersionFromSystemProperty()
             .withUpgradeVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-
-    // Upload config
+    cluster.start();    // Upload config
     cluster.uploadConfigSet(configDir, configName);
 
     solrClient = cluster.getSolrClient();
@@ -124,10 +137,10 @@ public class TestCloudPseudoReturnFields_ProcessBased extends ProcessBasedUpgrad
         .setProperties(collectionProperties)
         .process(solrClient);
 
-    collectionClient = cluster.getSolrClient(COLLECTION_NAME);
-
-    cluster.waitForActiveCollection(
-        COLLECTION_NAME, 30, TimeUnit.SECONDS, numShards, numShards * repFactor);
+    collectionClient = new CloudSolrClient.Builder(
+        java.util.List.of(cluster.getZkHost()), java.util.Optional.empty())
+        .build();
+    collectionClient.setDefaultCollection(COLLECTION_NAME);
 
     checkpoint("AFTER_COLLECTION_CREATE");
 
@@ -193,7 +206,7 @@ public class TestCloudPseudoReturnFields_ProcessBased extends ProcessBasedUpgrad
    * at least 1 doc is matched and at least 1 doc is returned
    */
   private SolrDocumentList assertSearch(SolrParams p) throws Exception {
-    QueryResponse rsp = getRandClient(random()).query(p);
+    QueryResponse rsp = getRandClient(getRandom()).query(p);
     assertEquals("failed request: " + p.toString() + " => " + rsp.toString(), 0, rsp.getStatus());
     assertTrue(
         "does not match at least one doc: " + p + " => " + rsp,

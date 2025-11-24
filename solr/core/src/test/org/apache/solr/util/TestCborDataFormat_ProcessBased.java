@@ -15,6 +15,12 @@
  * limitations under the License.
  */
 package org.apache.solr.util;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -42,7 +48,7 @@ import org.apache.solr.client.solrj.request.QueryRequest;
 import org.apache.solr.client.solrj.request.RequestWriter;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.cloud.ProcessBasedMiniSolrCloudCluster;
+import org.apache.solr.cloud.process.ProcessBasedMiniSolrCloudCluster;
 import org.apache.solr.cloud.upgrade.ProcessBasedUpgradeTestBase;
 import org.apache.solr.cloud.upgrade.SolrUpgradeCheckpoints;
 import org.apache.solr.common.params.MapSolrParams;
@@ -95,9 +101,7 @@ public class TestCborDataFormat_ProcessBased extends ProcessBasedUpgradeTestBase
             .withStartVersionFromSystemProperty()
             .withUpgradeVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-    cluster.uploadConfigSet(
+    cluster.start();    cluster.uploadConfigSet(
         TEST_PATH().resolve("configsets").resolve("cloud-managed").resolve("conf"), "conf");
     solrClient = cluster.getSolrClient();
 

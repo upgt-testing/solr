@@ -15,6 +15,17 @@
  * limitations under the License.
  */
 package org.apache.solr.cloud;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.getRandom;
+import org.apache.solr.cloud.process.ProcessBasedMiniSolrCloudCluster;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.apache.solr.SolrTestCaseJ4.params;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.rarely;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.randomInt;
 
 import static org.hamcrest.Matchers.containsString;
 
@@ -45,6 +56,8 @@ import org.apache.solr.common.cloud.Slice;
 import org.apache.solr.common.cloud.ZkStateReader;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.params.SolrParams;
+import static org.apache.lucene.tests.util.LuceneTestCase.expectThrows;
+import static org.hamcrest.MatcherAssert.assertThat;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -137,10 +150,7 @@ public class TestCloudDeleteByQuery_ProcessBased extends ProcessBasedUpgradeTest
             .withStartVersionFromSystemProperty()
             .withUpgradeVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-
-    // Upload config
+    cluster.start();    // Upload config
     cluster.uploadConfigSet(configDir, configName);
 
     solrClient = cluster.getSolrClient();
@@ -156,9 +166,11 @@ public class TestCloudDeleteByQuery_ProcessBased extends ProcessBasedUpgradeTest
             COLLECTION_NAME, configName, NUM_SHARDS, REPLICATION_FACTOR)
         .setProperties(collectionProperties)
         .process(solrClient);
-    cluster.waitForActiveCollection(COLLECTION_NAME, 30, TimeUnit.SECONDS, NUM_SHARDS, REPLICATION_FACTOR * NUM_SHARDS);
 
-    collectionClient = cluster.getSolrClient(COLLECTION_NAME);
+    collectionClient = new CloudSolrClient.Builder(
+        java.util.List.of(cluster.getZkHost()), java.util.Optional.empty())
+        .build();
+    collectionClient.setDefaultCollection(COLLECTION_NAME);
 
     checkpoint("AFTER_COLLECTION_CREATE");
 
@@ -170,7 +182,8 @@ public class TestCloudDeleteByQuery_ProcessBased extends ProcessBasedUpgradeTest
   }
 
   private void initializeReplicaClients() throws Exception {
-    ZkStateReader zkStateReader = solrClient.getClusterStateReader();
+    ZkStateReader zkStateReader = ((org.apache.solr.client.solrj.impl.ZkClientClusterStateProvider)
+        solrClient.getClusterStateProvider()).getZkStateReader();
 
     // Build URL map from node index
     HashMap<String, String> urlMap = new HashMap<>();
@@ -263,12 +276,12 @@ public class TestCloudDeleteByQuery_ProcessBased extends ProcessBasedUpgradeTest
     assertEquals(
         0,
         collectionClient
-            .add(doc(f("id", S_ONE_PRE + random().nextInt()), f("expected_shard_s", "shard1")))
+            .add(doc(f("id", S_ONE_PRE + getRandom().nextInt()), f("expected_shard_s", "shard1")))
             .getStatus());
     assertEquals(
         0,
         collectionClient
-            .add(doc(f("id", S_TWO_PRE + random().nextInt()), f("expected_shard_s", "shard2")))
+            .add(doc(f("id", S_TWO_PRE + getRandom().nextInt()), f("expected_shard_s", "shard2")))
             .getStatus());
     assertEquals(0, collectionClient.commit().getStatus());
     SolrDocumentList docs =

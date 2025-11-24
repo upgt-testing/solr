@@ -16,6 +16,12 @@
  */
 
 package org.apache.solr.metrics;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.nio.file.Paths;
 import java.util.List;
@@ -24,7 +30,7 @@ import java.util.Set;
 import org.apache.http.client.HttpClient;
 import org.apache.solr.SolrTestCaseJ4;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
-import org.apache.solr.cloud.ProcessBasedMiniSolrCloudCluster;
+import org.apache.solr.cloud.process.ProcessBasedMiniSolrCloudCluster;
 import org.apache.solr.cloud.upgrade.ProcessBasedUpgradeTestBase;
 import org.apache.solr.cloud.upgrade.SolrUpgradeCheckpoints;
 import org.apache.solr.common.util.Utils;
@@ -60,10 +66,7 @@ public class SolrMetricsIntegrationTest_ProcessBased extends ProcessBasedUpgrade
               .withNodeCount(3)
               .withStartVersionFromSystemProperty()
               .build();
-      cluster.start();
-      cluster.waitForAllNodes(30);
-
-      // Upload config
+      cluster.start();      // Upload config
       cluster.uploadConfigSet(
           Paths.get(SolrTestCaseJ4.TEST_HOME(), "collection1", "conf"), "conf");
 

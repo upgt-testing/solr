@@ -16,6 +16,19 @@
  */
 package org.apache.solr.cloud;
 
+import static com.carrotsearch.randomizedtesting.RandomizedTest.getRandom;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.randomInt;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.rarely;
+import static org.apache.solr.SolrTestCaseJ4.params;
+import static org.apache.solr.SolrTestCaseJ4.sdoc;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import org.apache.solr.cloud.process.ProcessBasedMiniSolrCloudCluster;
+
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,6 +52,8 @@ import org.apache.solr.cloud.upgrade.SolrUpgradeCheckpoints;
 import org.apache.solr.common.cloud.ZkStateReader;
 import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.junit.Test;
 
 /**
@@ -54,6 +69,8 @@ import org.junit.Test;
  */
 public class TestCloudPhrasesIdentificationComponent_ProcessBased
     extends ProcessBasedUpgradeTestBase {
+
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String DEBUG_LABEL = MethodHandles.lookup().lookupClass().getName();
   private static final String COLLECTION_NAME = DEBUG_LABEL + "_collection";
@@ -119,9 +136,9 @@ public class TestCloudPhrasesIdentificationComponent_ProcessBased
 
   private void setupCluster() throws Exception {
     // Multi replicas should not matter...
-    repFactor = usually() ? 1 : 2;
+    repFactor = getRandom().nextInt(10) < 8 ? 1 : 2;  // usually() equivalent: ~80% chance of 1
     // ... but we definitely want to test multiple shards
-    numShards = TestUtil.nextInt(random(), 1, (usually() ? 2 : 3));
+    numShards = TestUtil.nextInt(getRandom(), 1, (getRandom().nextInt(10) < 8 ? 2 : 3));  // usually() equivalent
     numNodes = (numShards * repFactor);
 
     final String configName = DEBUG_LABEL + "_config-set";
@@ -135,10 +152,7 @@ public class TestCloudPhrasesIdentificationComponent_ProcessBased
             .withStartVersionFromSystemProperty()
             .withUpgradeVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-
-    // Upload config
+    cluster.start();    // Upload config
     cluster.uploadConfigSet(configDir, configName);
 
     solrClient = cluster.getSolrClient();
@@ -153,7 +167,10 @@ public class TestCloudPhrasesIdentificationComponent_ProcessBased
         .setProperties(collectionProperties)
         .process(solrClient);
 
-    collectionClient = cluster.getSolrClient(COLLECTION_NAME);
+    collectionClient = new CloudSolrClient.Builder(
+        java.util.List.of(cluster.getZkHost()), java.util.Optional.empty())
+        .build();
+    collectionClient.setDefaultCollection(COLLECTION_NAME);
 
     waitForRecoveriesToFinish(collectionClient);
 
@@ -209,7 +226,7 @@ public class TestCloudPhrasesIdentificationComponent_ProcessBased
               params("q", "-*:*", "phrases.q", input, "phrases", "true"))) {
         final QueryRequest req = new QueryRequest(p);
         req.setPath(path);
-        final QueryResponse rsp = req.process(getRandClient(random()));
+        final QueryResponse rsp = req.process(getRandClient(getRandom()));
         try {
           @SuppressWarnings({"unchecked"})
           NamedList<Object> phrases = (NamedList<Object>) rsp.getResponse().get("phrases");
@@ -249,7 +266,7 @@ public class TestCloudPhrasesIdentificationComponent_ProcessBased
               params("q", "-*:*", "phrases.q", input, "phrases", "true"))) {
         final QueryRequest req = new QueryRequest(p);
         req.setPath("/phrases");
-        final QueryResponse rsp = req.process(getRandClient(random()));
+        final QueryResponse rsp = req.process(getRandClient(getRandom()));
         try {
           @SuppressWarnings({"unchecked"})
           NamedList<Object> phrases = (NamedList<Object>) rsp.getResponse().get("phrases");
@@ -283,8 +300,6 @@ public class TestCloudPhrasesIdentificationComponent_ProcessBased
 
   private void waitForRecoveriesToFinish(CloudSolrClient client) throws Exception {
     assertNotNull(client.getDefaultCollection());
-    cluster.waitForActiveCollection(
-        client.getDefaultCollection(), 30, TimeUnit.SECONDS, numShards, numShards * repFactor);
   }
 
   private void closeClients() {

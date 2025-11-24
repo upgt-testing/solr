@@ -15,6 +15,15 @@
  * limitations under the License.
  */
 package org.apache.solr.search.stats;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.getRandom;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.rarely;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.randomInt;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
@@ -28,7 +37,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.response.CollectionAdminResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.cloud.ProcessBasedMiniSolrCloudCluster;
+import org.apache.solr.cloud.process.ProcessBasedMiniSolrCloudCluster;
 import org.apache.solr.cloud.SolrCloudTestCase;
 import org.apache.solr.cloud.upgrade.ProcessBasedUpgradeTestBase;
 import org.apache.solr.cloud.upgrade.SolrUpgradeCheckpoints;
@@ -64,7 +73,7 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
   }
 
   private void runTestSimpleQuery() throws Exception {
-    if (random().nextBoolean()) {
+    if (getRandom().nextBoolean()) {
       System.setProperty("solr.statsCache", ExactStatsCache.class.getName());
     } else {
       System.setProperty("solr.statsCache", LRUStatsCache.class.getName());
@@ -80,10 +89,7 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
               .withNodeCount(3)
               .withStartVersionFromSystemProperty()
               .build();
-      cluster.start();
-      cluster.waitForAllNodes(30);
-
-      cluster.uploadConfigSet(
+      cluster.start();      cluster.uploadConfigSet(
           Paths.get(SolrTestCaseJ4.TEST_HOME(), "collection1", "conf"), "conf1");
       cluster.uploadConfigSet(
           Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "configset-2", "conf"), "conf2");
@@ -110,11 +116,11 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
       solrClient.add("onecollection", doc);
       solrClient.add("onecollection_local", doc);
 
-      int nDocs = TestUtil.nextInt(random(), 10, 100);
+      int nDocs = TestUtil.nextInt(getRandom(), 10, 100);
       for (int i = 0; i < nDocs; i++) {
         doc = new SolrInputDocument();
         doc.setField("id", "" + (3 + i));
-        String cat = TestUtil.randomSimpleString(random());
+        String cat = TestUtil.randomSimpleString(getRandom());
         if (!cat.equals("football")) { // Making sure no other document has the query term in it.
           doc.setField("cat", cat);
           // Put most documents in shard b so that 'football' becomes 'rare' in shard b
@@ -181,7 +187,7 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
   }
 
   private void runTestMultiCollectionQuery() throws Exception {
-    if (random().nextBoolean()) {
+    if (getRandom().nextBoolean()) {
       System.setProperty("solr.statsCache", ExactStatsCache.class.getName());
     } else {
       System.setProperty("solr.statsCache", LRUStatsCache.class.getName());
@@ -196,10 +202,7 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
               .withNodeCount(3)
               .withStartVersionFromSystemProperty()
               .build();
-      cluster.start();
-      cluster.waitForAllNodes(30);
-
-      cluster.uploadConfigSet(
+      cluster.start();      cluster.uploadConfigSet(
           Paths.get(SolrTestCaseJ4.TEST_HOME(), "collection1", "conf"), "conf1");
       cluster.uploadConfigSet(
           Paths.get(SolrTestCaseJ4.TEST_HOME(), "configsets", "configset-2", "conf"), "conf2");
@@ -266,7 +269,7 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
 
   @SuppressWarnings("unchecked")
   private void runTestDisableDistribStats() throws Exception {
-    if (random().nextBoolean()) {
+    if (getRandom().nextBoolean()) {
       System.setProperty("solr.statsCache", ExactStatsCache.class.getName());
     } else {
       System.setProperty("solr.statsCache", LRUStatsCache.class.getName());
@@ -281,10 +284,7 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
               .withNodeCount(3)
               .withStartVersionFromSystemProperty()
               .build();
-      cluster.start();
-      cluster.waitForAllNodes(30);
-
-      cluster.uploadConfigSet(
+      cluster.start();      cluster.uploadConfigSet(
           Paths.get(SolrTestCaseJ4.TEST_HOME(), "collection1", "conf"), "conf1");
 
       checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
@@ -347,15 +347,11 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
     if (router.equals(ImplicitDocRouter.NAME)) {
       CollectionAdminRequest.Create create =
           CollectionAdminRequest.createCollectionWithImplicitRouter(name, config, "a,b,c", 1);
-      response = create.process(solrClient);
-      cluster.waitForActiveCollection(name, 3, 3);
-    } else {
+      response = create.process(solrClient);    } else {
       CollectionAdminRequest.Create create =
           CollectionAdminRequest.createCollection(name, config, 2, 1)
               .setPerReplicaState(SolrCloudTestCase.USE_PER_REPLICA_STATE);
-      response = create.process(solrClient);
-      cluster.waitForActiveCollection(name, 2, 2);
-    }
+      response = create.process(solrClient);    }
 
     if (response.getStatus() != 0 || response.getErrorMessages() != null) {
       fail("Could not create collection. Response" + response);
@@ -375,13 +371,13 @@ public class TestDistribIDF_ProcessBased extends ProcessBasedUpgradeTestBase {
     solrClient.add("collection2", doc);
     solrClient.add("collection2_local", doc);
 
-    int nDocs = TestUtil.nextInt(random(), 10, 100);
+    int nDocs = TestUtil.nextInt(getRandom(), 10, 100);
     int collection1Count = 1;
     int collection2Count = 1;
     for (int i = 0; i < nDocs; i++) {
       doc = new SolrInputDocument();
       doc.setField("id", 3 + i);
-      String cat = TestUtil.randomSimpleString(random());
+      String cat = TestUtil.randomSimpleString(getRandom());
       if (!cat.equals("football")) { // Making sure no other document has the query term in it.
         doc.setField("cat", cat);
         // Put most documents in collection2* so that 'football' becomes 'rare' in collection2*

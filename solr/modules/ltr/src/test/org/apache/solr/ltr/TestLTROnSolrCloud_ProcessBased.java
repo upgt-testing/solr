@@ -15,6 +15,15 @@
  * limitations under the License.
  */
 package org.apache.solr.ltr;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.getRandom;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.rarely;
+import static com.carrotsearch.randomizedtesting.RandomizedTest.randomInt;
 
 import static java.util.stream.Collectors.toList;
 
@@ -28,7 +37,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.response.CollectionAdminResponse;
 import org.apache.solr.client.solrj.response.QueryResponse;
-import org.apache.solr.cloud.ProcessBasedMiniSolrCloudCluster;
+import org.apache.solr.cloud.process.ProcessBasedMiniSolrCloudCluster;
 import org.apache.solr.cloud.upgrade.ProcessBasedUpgradeTestBase;
 import org.apache.solr.cloud.upgrade.SolrUpgradeCheckpoints;
 import org.apache.solr.common.SolrInputDocument;
@@ -65,10 +74,11 @@ public class TestLTROnSolrCloud_ProcessBased extends ProcessBasedUpgradeTestBase
   private RestTestHarness restTestHarness;
 
   private void setupTestInit(String solrconfig, String schema) throws Exception {
-    tmpSolrHome = createTempDir();
+    tmpSolrHome = java.nio.file.Files.createTempDirectory("ltr-test");
     tmpConfDir = tmpSolrHome.resolve(CONF_DIR);
     tmpConfDir.toFile().deleteOnExit();
-    PathUtils.copyDirectory(TEST_PATH(), tmpSolrHome.toAbsolutePath());
+    Path testResourcePath = java.nio.file.Paths.get("solr/modules/ltr/src/test-files/solr/collection1");
+    PathUtils.copyDirectory(testResourcePath, tmpSolrHome.toAbsolutePath());
 
     final Path fstore = tmpConfDir.resolve(FEATURE_FILE_NAME);
     final Path mstore = tmpConfDir.resolve(MODEL_FILE_NAME);
@@ -115,10 +125,7 @@ public class TestLTROnSolrCloud_ProcessBased extends ProcessBasedUpgradeTestBase
         .withStartVersionFromSystemProperty()
         .withUpgradeVersionFromSystemProperty()
         .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-
-    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
+    cluster.start();    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
     // Upload config
     Path configDir = tmpSolrHome.resolve(CONF_DIR);
@@ -134,7 +141,8 @@ public class TestLTROnSolrCloud_ProcessBased extends ProcessBasedUpgradeTestBase
     indexDocuments(COLLECTION);
 
     // Initialize RestTestHarness by getting core name from ZkStateReader
-    ZkStateReader zkStateReader = solrClient.getClusterStateProvider().getZkStateReader();
+    ZkStateReader zkStateReader = ((org.apache.solr.client.solrj.impl.ZkClientClusterStateProvider)
+        solrClient.getClusterStateProvider()).getZkStateReader();
     DocCollection docCollection = zkStateReader.getCollection(COLLECTION);
     Replica replica = docCollection.getSlices().iterator().next().getReplicas().iterator().next();
     String coreName = replica.getCoreName();
@@ -400,9 +408,7 @@ public class TestLTROnSolrCloud_ProcessBased extends ProcessBasedUpgradeTestBase
 
     if (response.getStatus() != 0 || response.getErrorMessages() != null) {
       fail("Could not create collection. Response" + response);
-    }
-    cluster.waitForActiveCollection(name, numShards, numShards * numReplicas);
-  }
+    }  }
 
   private void indexDocument(String collection, String id, String title, String description, int popularity)
       throws Exception {
@@ -427,14 +433,14 @@ public class TestLTROnSolrCloud_ProcessBased extends ProcessBasedUpgradeTestBase
     final int collectionSize = 8;
     // put documents in random order to check that advanceExact is working correctly
     List<Integer> docIds = IntStream.rangeClosed(1, collectionSize).boxed().collect(toList());
-    Collections.shuffle(docIds, random());
+    Collections.shuffle(docIds, getRandom());
 
     int docCounter = 1;
     for (int docId : docIds) {
       final int popularity = docId;
       indexDocument(collection, String.valueOf(docId), "a1", "bloom", popularity);
       // maybe commit in the middle in order to check that everything works fine for multi-segment case
-      if (docCounter == collectionSize / 2 && random().nextBoolean()) {
+      if (docCounter == collectionSize / 2 && getRandom().nextBoolean()) {
         solrClient.commit(collection);
       }
       docCounter++;

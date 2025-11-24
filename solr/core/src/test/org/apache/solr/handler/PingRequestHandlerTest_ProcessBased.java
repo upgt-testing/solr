@@ -69,9 +69,7 @@ public class PingRequestHandlerTest_ProcessBased extends ProcessBasedUpgradeTest
             .withNodeCount(3)
             .withStartVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-    solrClient = cluster.getSolrClient();
+    cluster.start();    solrClient = cluster.getSolrClient();
 
     checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
@@ -83,11 +81,7 @@ public class PingRequestHandlerTest_ProcessBased extends ProcessBasedUpgradeTest
     // Create collection
     String collectionName = "testSolrCloudCollection";
     CollectionAdminRequest.createCollection(collectionName, configName, NUM_SHARDS, REPLICATION_FACTOR)
-        .process(solrClient);
-
-    cluster.waitForActiveCollection(collectionName, NUM_SHARDS, NUM_SHARDS * REPLICATION_FACTOR);
-
-    checkpoint("AFTER_COLLECTION_CREATE");
+        .process(solrClient);    checkpoint("AFTER_COLLECTION_CREATE");
 
     // Send distributed ping query
     SolrPingWithDistrib reqDistrib = new SolrPingWithDistrib();

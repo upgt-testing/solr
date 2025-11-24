@@ -98,9 +98,7 @@ public class TestLocalFSCloudBackupRestore_ProcessBased extends ProcessBasedUpgr
               .withNodeCount(NUM_SHARDS)
               .withStartVersionFromSystemProperty()
               .build();
-      cluster.start();
-      cluster.waitForAllNodes(30);
-      solrClient = cluster.getSolrClient();
+      cluster.start();      solrClient = cluster.getSolrClient();
 
       checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
@@ -110,10 +108,7 @@ public class TestLocalFSCloudBackupRestore_ProcessBased extends ProcessBasedUpgr
 
       // Create collection
       CollectionAdminRequest.createCollection(COLLECTION_NAME, "conf1", NUM_SHARDS, NUM_REPLICAS)
-          .process(solrClient);
-      cluster.waitForActiveCollection(COLLECTION_NAME, NUM_SHARDS, NUM_SHARDS * NUM_REPLICAS);
-
-      checkpoint("AFTER_COLLECTION_CREATE");
+          .process(solrClient);      checkpoint("AFTER_COLLECTION_CREATE");
 
       // Index some documents
       int numDocs = 100;
@@ -152,12 +147,7 @@ public class TestLocalFSCloudBackupRestore_ProcessBased extends ProcessBasedUpgr
       String restoredCollectionName = COLLECTION_NAME + "_restored";
       CollectionAdminRequest.restoreCollection(restoredCollectionName, BACKUP_NAME)
           .setLocation(backupLocation)
-          .process(solrClient);
-
-      cluster.waitForActiveCollection(
-          restoredCollectionName, NUM_SHARDS, NUM_SHARDS * NUM_REPLICAS);
-
-      // Verify restored collection has all documents
+          .process(solrClient);      // Verify restored collection has all documents
       queryResponse = solrClient.query(restoredCollectionName, new SolrQuery("*:*"));
       assertEquals(
           "Restored collection should have " + numDocs + " documents",
@@ -203,9 +193,7 @@ public class TestLocalFSCloudBackupRestore_ProcessBased extends ProcessBasedUpgr
               .withNodeCount(NUM_SHARDS)
               .withStartVersionFromSystemProperty()
               .build();
-      cluster.start();
-      cluster.waitForAllNodes(30);
-      solrClient = cluster.getSolrClient();
+      cluster.start();      solrClient = cluster.getSolrClient();
 
       checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
@@ -215,10 +203,7 @@ public class TestLocalFSCloudBackupRestore_ProcessBased extends ProcessBasedUpgr
 
       // Create collection
       CollectionAdminRequest.createCollection(COLLECTION_NAME, "conf1", NUM_SHARDS, NUM_REPLICAS)
-          .process(solrClient);
-      cluster.waitForActiveCollection(COLLECTION_NAME, NUM_SHARDS, NUM_SHARDS * NUM_REPLICAS);
-
-      // Index initial documents
+          .process(solrClient);      // Index initial documents
       int initialDocs = 50;
       for (int i = 0; i < initialDocs; i++) {
         UpdateRequest updateRequest = new UpdateRequest();
@@ -254,12 +239,7 @@ public class TestLocalFSCloudBackupRestore_ProcessBased extends ProcessBasedUpgr
       String restoredCollectionName = COLLECTION_NAME + "_restored_inc";
       CollectionAdminRequest.restoreCollection(restoredCollectionName, BACKUP_NAME)
           .setLocation(backupLocation)
-          .process(solrClient);
-
-      cluster.waitForActiveCollection(
-          restoredCollectionName, NUM_SHARDS, NUM_SHARDS * NUM_REPLICAS);
-
-      // Verify all documents are restored
+          .process(solrClient);      // Verify all documents are restored
       QueryResponse queryResponse = solrClient.query(restoredCollectionName, new SolrQuery("*:*"));
       assertEquals(
           "Restored collection should have all documents",

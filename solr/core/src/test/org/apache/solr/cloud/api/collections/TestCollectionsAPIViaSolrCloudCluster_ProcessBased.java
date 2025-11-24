@@ -84,9 +84,7 @@ public class TestCollectionsAPIViaSolrCloudCluster_ProcessBased
             .withNodeCount(NODE_COUNT)
             .withStartVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-    solrClient = cluster.getSolrClient();
+    cluster.start();    solrClient = cluster.getSolrClient();
 
     assertNotNull("ZkServer should not be null", cluster.getZkServer());
     assertEquals("Should have " + NODE_COUNT + " nodes", NODE_COUNT, cluster.getNodeCount());
@@ -102,10 +100,7 @@ public class TestCollectionsAPIViaSolrCloudCluster_ProcessBased
     // Create collection
     CollectionAdminRequest.createCollection(collectionName, CONFIG_NAME, NUM_SHARDS, NUM_REPLICAS)
         .setProperties(COLLECTION_PROPERTIES)
-        .process(solrClient);
-    cluster.waitForActiveCollection(collectionName, NUM_SHARDS, NUM_SHARDS * NUM_REPLICAS);
-
-    checkpoint("AFTER_COLLECTION_CREATE");
+        .process(solrClient);    checkpoint("AFTER_COLLECTION_CREATE");
 
     // Index and query
     new UpdateRequest().add("id", "1").commit(solrClient, collectionName);
@@ -120,9 +115,7 @@ public class TestCollectionsAPIViaSolrCloudCluster_ProcessBased
       Thread.sleep(2000);
 
       // Restart the node
-      cluster.startJettySolrRunner(nodeToStop);
-      cluster.waitForAllNodes(30);
-    }
+      cluster.startJettySolrRunner(nodeToStop);    }
 
     // Delete collection
     CollectionAdminRequest.deleteCollection(collectionName).process(solrClient);
@@ -134,10 +127,7 @@ public class TestCollectionsAPIViaSolrCloudCluster_ProcessBased
     // Re-create collection
     CollectionAdminRequest.createCollection(collectionName, CONFIG_NAME, NUM_SHARDS, NUM_REPLICAS)
         .setProperties(COLLECTION_PROPERTIES)
-        .process(solrClient);
-    cluster.waitForActiveCollection(collectionName, NUM_SHARDS, NUM_SHARDS * NUM_REPLICAS);
-
-    // Verify no left-over state
+        .process(solrClient);    // Verify no left-over state
     assertEquals(
         "Should have 0 documents after recreation",
         0,
@@ -169,9 +159,7 @@ public class TestCollectionsAPIViaSolrCloudCluster_ProcessBased
             .withNodeCount(NODE_COUNT)
             .withStartVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-    solrClient = cluster.getSolrClient();
+    cluster.start();    solrClient = cluster.getSolrClient();
 
     checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
@@ -185,11 +173,7 @@ public class TestCollectionsAPIViaSolrCloudCluster_ProcessBased
     CollectionAdminRequest.createCollection(collectionName, CONFIG_NAME, NUM_SHARDS, NUM_REPLICAS)
         .setCreateNodeSet(CollectionHandlingUtils.CREATE_NODE_SET_EMPTY)
         .setProperties(COLLECTION_PROPERTIES)
-        .process(solrClient);
-
-    cluster.waitForActiveCollection(collectionName, NUM_SHARDS, 0);
-
-    // Verify collection has no cores
+        .process(solrClient);    // Verify collection has no cores
     ClusterState clusterState = solrClient.getClusterState();
     DocCollection docCollection = clusterState.getCollection(collectionName);
     int coreCount = 0;

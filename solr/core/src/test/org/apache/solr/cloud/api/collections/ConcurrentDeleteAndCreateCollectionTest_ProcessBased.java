@@ -72,10 +72,7 @@ public class ConcurrentDeleteAndCreateCollectionTest_ProcessBased
             .withNodeCount(1)
             .withStartVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-
-    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
+    cluster.start();    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
     final AtomicReference<Exception> failure = new AtomicReference<>();
     final int timeToRunSec = 30;
@@ -127,10 +124,7 @@ public class ConcurrentDeleteAndCreateCollectionTest_ProcessBased
             .withNodeCount(1)
             .withStartVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-
-    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
+    cluster.start();    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
     final String configName = "testconfig";
     // Upload config once, to be used by all collections

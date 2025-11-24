@@ -15,6 +15,13 @@
  * limitations under the License.
  */
 package org.apache.solr.cloud;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.apache.solr.SolrTestCaseJ4.params;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -29,7 +36,7 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.request.CollectionAdminRequest;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.UpdateResponse;
-import org.apache.solr.cloud.ProcessBasedMiniSolrCloudCluster;
+import org.apache.solr.cloud.process.ProcessBasedMiniSolrCloudCluster;
 import org.apache.solr.cloud.upgrade.ProcessBasedUpgradeTestBase;
 import org.apache.solr.cloud.upgrade.SolrUpgradeCheckpoints;
 import org.apache.solr.common.SolrDocument;
@@ -48,6 +55,7 @@ import org.apache.solr.common.params.SolrParams;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.common.util.SimpleOrderedMap;
 import org.junit.Test;
+import static org.apache.lucene.tests.util.LuceneTestCase.expectThrows;
 
 /**
  * ProcessBased upgrade test for TolerantUpdateProcessor functionality in SolrCloud.
@@ -110,25 +118,21 @@ public class TestTolerantUpdateProcessorCloud_ProcessBased extends ProcessBasedU
         .withStartVersionFromSystemProperty()
         .withUpgradeVersionFromSystemProperty()
         .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-
-    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
+    cluster.start();    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
     // Upload configset and create collection
     cluster.uploadConfigSet(configDir.toPath(), configName);
 
     solrClient = cluster.getSolrClient();
-    collectionClient = cluster.getSolrClient(COLLECTION_NAME);
+    collectionClient = new CloudSolrClient.Builder(
+        java.util.List.of(cluster.getZkHost()), java.util.Optional.empty())
+        .build();
+    collectionClient.setDefaultCollection(COLLECTION_NAME);
 
     CollectionAdminRequest.createCollection(COLLECTION_NAME, configName, NUM_SHARDS, REPLICATION_FACTOR)
         .withProperty("config", "solrconfig-distrib-update-processor-chains.xml")
         .withProperty("schema", "schema15.xml") // string id for doc routing prefix
-        .process(solrClient);
-
-    cluster.waitForActiveCollection(COLLECTION_NAME, NUM_SHARDS, REPLICATION_FACTOR * NUM_SHARDS);
-
-    checkpoint("AFTER_COLLECTION_CREATE");
+        .process(solrClient);    checkpoint("AFTER_COLLECTION_CREATE");
 
     // Create specialized clients for different node types
     setupSpecializedClients();
@@ -183,7 +187,8 @@ public class TestTolerantUpdateProcessorCloud_ProcessBased extends ProcessBasedU
   }
 
   private void setupSpecializedClients() throws Exception {
-    ZkStateReader zkStateReader = cluster.getZkStateReader();
+    ZkStateReader zkStateReader = ((org.apache.solr.client.solrj.impl.ZkClientClusterStateProvider)
+        solrClient.getClusterStateProvider()).getZkStateReader();
 
     // Build map of node URLs
     HashMap<String, String> urlMap = new HashMap<>();
@@ -783,7 +788,7 @@ public class TestTolerantUpdateProcessorCloud_ProcessBased extends ProcessBasedU
     docs.add(doc(f("id", S_ONE_PRE + "x")));
     docs.add(doc(f("id", S_TWO_PRE + "x")));
 
-    UpdateResponse rsp = update(params("update.chain", "tolerant-chain-max-errors-10",
+    rsp = update(params("update.chain", "tolerant-chain-max-errors-10",
             "maxErrors", "-1", "commit", "true"),
         docs.toArray(new SolrInputDocument[0]))
         .process(client);

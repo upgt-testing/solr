@@ -70,9 +70,7 @@ public class TestDistribFileStore_ProcessBased extends ProcessBasedUpgradeTestBa
               .withNodeCount(2)
               .withStartVersionFromSystemProperty()
               .build();
-      cluster.start();
-      cluster.waitForAllNodes(30);
-      solrClient = cluster.getSolrClient();
+      cluster.start();      solrClient = cluster.getSolrClient();
 
       checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 

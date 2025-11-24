@@ -15,10 +15,17 @@
  * limitations under the License.
  */
 package org.apache.solr.cloud;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.lucene.tests.util.LuceneTestCase;
+import org.apache.solr.cloud.process.ProcessBasedMiniSolrCloudCluster;
 import org.apache.solr.cloud.upgrade.ProcessBasedUpgradeTestBase;
 import org.apache.solr.cloud.upgrade.SolrUpgradeCheckpoints;
 import org.apache.solr.client.solrj.SolrClient;
@@ -64,10 +71,7 @@ public class ConcurrentCreateRoutedAliasTest_ProcessBased extends ProcessBasedUp
             .withStartVersionFromSystemProperty()
             .withUpgradeVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-
-    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
+    cluster.start();    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
     // This is the test where we blow out a bunch of create commands all out at once. Other tests
     // are more functionality based, and just use a single thread.
@@ -147,10 +151,7 @@ public class ConcurrentCreateRoutedAliasTest_ProcessBased extends ProcessBasedUp
             .withStartVersionFromSystemProperty()
             .withUpgradeVersionFromSystemProperty()
             .build();
-    cluster.start();
-    cluster.waitForAllNodes(30);
-
-    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
+    cluster.start();    checkpoint(SolrUpgradeCheckpoints.AFTER_CLUSTER_START);
 
     final AtomicReference<Exception> failure = new AtomicReference<>();
 
