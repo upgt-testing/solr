@@ -24,19 +24,19 @@ package org.apache.solr.cloud.upgrade;
  *
  * <p>Usage example:
  *
- * <pre>{@code
- * @Test
+ * <pre>
+ * &#64;Test
  * public void testFeature_NO_UPGRADE() throws Exception {
  *   upgradeCheckpoint = SolrUpgradeCheckpoints.NO_UPGRADE;
  *   // ... test logic
  * }
  *
- * @Test
+ * &#64;Test
  * public void testFeature_AFTER_CLUSTER_START() throws Exception {
  *   upgradeCheckpoint = SolrUpgradeCheckpoints.AFTER_CLUSTER_START;
  *   // ... same test logic, but upgrade happens after cluster starts
  * }
- * }</pre>
+ * </pre>
  */
 public class SolrUpgradeCheckpoints {
 
